@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Workout from './Workout'
-import { Group, Stack, Flex } from '@mantine/core'
+import { Flex } from '@mantine/core'
+import { useLocalStorage } from '@mantine/hooks';
 
 function Workouts() {
 
     const workouts = [
         {
+            id: crypto.randomUUID(),
             name: "hollow",
             note: "motus",
             prepare: 10,
@@ -75,6 +77,16 @@ function Workouts() {
             restSet: 20,
         }
     ]
+
+    const [value, setValue] = useLocalStorage({
+        key: 'workouts',
+        defaultValue: [],
+    });
+
+    useEffect(() => {
+        setValue(workouts)
+        console.log("setting localstate");
+    }, [])
 
     return (
         <Flex justify="space-between" 
