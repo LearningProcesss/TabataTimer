@@ -1,15 +1,19 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Modal, Button, Box, Paper, TextInput, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { WorkoutsContext } from '../main';
 
 function WorkoutOperations({ opened, onClose, workout }) {
-
+  
+  const context = useContext(WorkoutsContext);
+  
   const form = useForm({
     mode: 'uncontrolled',
-    initialValues: workout,
-    validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+    initialValues: {
+      name: workout.name,
+      note: workout.note
     },
+
   });
 
   return (
@@ -20,7 +24,16 @@ function WorkoutOperations({ opened, onClose, workout }) {
         title="Workout"
         centered>
         <Paper shadow="sm" p="xl">
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form onSubmit={form.onSubmit((values, event) => 
+            {
+              console.log(values, event)
+              context.handleWorkoutsChangeHandler(
+                {
+                  id: workout.id,
+                  name: values.name,
+                  note: values.note
+                })
+            })}>
             <TextInput
               withAsterisk
               label="Name"
@@ -28,14 +41,13 @@ function WorkoutOperations({ opened, onClose, workout }) {
               key={form.key('name')}
               {...form.getInputProps('name')}
             />
-
-            {/* <Checkbox
-              mt="md"
-              label="I agree to sell my privacy"
-              key={form.key('termsOfService')}
-              {...form.getInputProps('termsOfService', { type: 'checkbox' })}
-            /> */}
-
+            <TextInput
+              withAsterisk
+              label="Note"
+              placeholder="your notes"
+              key={form.key('note')}
+              {...form.getInputProps('note')}
+            />
             <Group justify="flex-end" mt="md">
               <Button type="submit">Submit</Button>
             </Group>
