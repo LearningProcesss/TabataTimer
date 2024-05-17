@@ -5,11 +5,19 @@ import { WorkoutsContext } from '../main';
 
 function WorkoutOperations({ opened, onClose, workout }) {
   
-  const context = useContext(WorkoutsContext);
+  const { handleWorkoutsChangeHandler, createNextWorkoutId } = useContext(WorkoutsContext);
   
   const form = useForm({
     mode: 'uncontrolled',
-    initialValues: {
+    initialValues: workout === null ? 
+    { 
+      id: '',
+      name: '',
+      note: ''
+    } 
+    : 
+    {
+      id: workout.id,
       name: workout.name,
       note: workout.note
     },
@@ -27,12 +35,14 @@ function WorkoutOperations({ opened, onClose, workout }) {
           <form onSubmit={form.onSubmit((values, event) => 
             {
               console.log(values, event)
-              context.handleWorkoutsChangeHandler(
+              handleWorkoutsChangeHandler(
                 {
-                  id: workout.id,
+                  id: !values.id ? createNextWorkoutId() : values.id,
                   name: values.name,
                   note: values.note
-                })
+                });
+                form.reset();
+                onClose();
             })}>
             <TextInput
               withAsterisk

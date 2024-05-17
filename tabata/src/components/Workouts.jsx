@@ -1,100 +1,45 @@
-import React, { useEffect } from 'react'
+import { useContext } from 'react'
 import Workout from './Workout'
-import { Flex } from '@mantine/core'
-import { useLocalStorage } from '@mantine/hooks';
+import { WorkoutsContext } from '../main'
+import WorkoutOperations from './WorkoutOperations'
+import { ActionIcon, Affix, Flex } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IoMdAdd } from "react-icons/io";
 
 function Workouts() {
 
-    const workouts = [
-        {
-            id: crypto.randomUUID(),
-            name: "hollow",
-            note: "motus",
-            prepare: 10,
-            work: 20,
-            restCycle: 10,
-            cycles: 4,
-            sets: 1,
-            restSet: 20,
-            set: {
-                count: 2,
-                rest: 10,
-                cycles: {
-                    count: 4,
-                    work: 20,
-                    rest: 10
-                }
-            }
-        },
-        {
-            name: "arm lifting repeaters",
-            note: "90%",
-            prepare: 10,
-            work: 7,
-            restCycle: 3,
-            cycles: 5,
-            sets: 1,
-            restSet: 20,
-        },
-        {
-            name: "arm lifting repeaters",
-            note: "90%",
-            prepare: 10,
-            work: 7,
-            restCycle: 3,
-            cycles: 5,
-            sets: 1,
-            restSet: 20,
-        },
-        {
-            name: "arm lifting repeaters",
-            note: "90%",
-            prepare: 10,
-            work: 7,
-            restCycle: 3,
-            cycles: 5,
-            sets: 1,
-            restSet: 20,
-        },
-        {
-            name: "arm lifting repeaters",
-            note: "90%",
-            prepare: 10,
-            work: 7,
-            restCycle: 3,
-            cycles: 5,
-            sets: 1,
-            restSet: 20,
-        },
-        {
-            name: "arm lifting repeaters",
-            note: "90%",
-            prepare: 10,
-            work: 7,
-            restCycle: 3,
-            cycles: 5,
-            sets: 1,
-            restSet: 20,
-        }
-    ]
+    const { workouts } = useContext(WorkoutsContext);
 
-    const [value, setValue] = useLocalStorage({
-        key: 'workouts',
-        defaultValue: [],
-    });
+    const [opened, { open, close }] = useDisclosure(false);
 
-    useEffect(() => {
-        setValue(workouts)
-        console.log("setting localstate");
-    }, [])
+
+    // const [value, setValue] = useLocalStorage({
+    //     key: 'workouts',
+    //     defaultValue: [],
+    // });
+
+    // useEffect(() => {
+    //     setValue(workouts)
+    //     console.log("setting localstate");
+    // }, [])
 
     return (
-        <Flex justify="space-between" 
-              align={"center"} 
-              wrap={"wrap"}
-              >
-            {workouts.map((workout, i) => <Workout key={i} workout={workout} />)}
-        </Flex>
+        <>
+            <Flex justify="space-between"
+                align={"center"}
+                wrap={"wrap"}
+            >
+                {workouts.map((workout, i) => <Workout key={i} workout={workout} />)}
+            </Flex>
+            <Affix position={{ bottom: 40, right: 40 }}>
+                <ActionIcon onClick={open} color="blue" radius="xl" size={60}>
+                    {/* <IconPhone stroke={1.5} size={30} /> */}
+                    <IoMdAdd size={30} />
+                </ActionIcon>
+            </Affix>
+            <WorkoutOperations opened={opened} onClose={close} workout={null} />
+        </>
+
     )
 }
 

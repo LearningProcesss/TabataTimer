@@ -7,7 +7,7 @@ import App from './App.jsx'
 import WorkoutOperations from './components/WorkoutOperations';
 import './index.css'
 import '@mantine/core/styles.css';
-import LZString, { compress, compressToBase64, compressToEncodedURIComponent, compressToUTF16, compressToUint8Array } from 'lz-string'
+import LZString, { compress, compressToBase64, decompressFromBase64 } from 'lz-string'
 import { useLocalStorage } from '@mantine/hooks';
 
 const router = createBrowserRouter([
@@ -40,7 +40,8 @@ export const contextState = {
      * @param {Number} workout.sets
      * @param {Number} workout.restSet
     */
-  handleWorkoutsChangeHandler: (workout) => { }
+  handleWorkoutsChangeHandler: (workout) => { },
+  createNextWorkoutId: () => ""
 }
 
 export const WorkoutsContext = createContext(contextState);
@@ -49,17 +50,116 @@ function WorkoutsContextProviderWrapper({ children }) {
 
   const [workouts, setWorkouts] = useState([]);
 
-  const [value, setValue] = useLocalStorage({
+  const [localStorage, setLocalStorage] = useLocalStorage({
     key: 'workouts',
     defaultValue: [],
   });
+
+  const workoutsFake = [
+    {
+      id: crypto.randomUUID(),
+      name: "hollow",
+      note: "motus",
+      prepare: 10,
+      work: 20,
+      restCycle: 10,
+      cycles: 4,
+      sets: 1,
+      restSet: 20,
+      set: {
+        count: 2,
+        rest: 10,
+        cycles: {
+          count: 4,
+          work: 20,
+          rest: 10
+        }
+      }
+    },
+    {
+      name: "arm lifting repeaters",
+      note: "90%",
+      prepare: 10,
+      work: 7,
+      restCycle: 3,
+      cycles: 5,
+      sets: 1,
+      restSet: 20,
+    },
+    {
+      name: "arm lifting repeaters",
+      note: "90%",
+      prepare: 10,
+      work: 7,
+      restCycle: 3,
+      cycles: 5,
+      sets: 1,
+      restSet: 20,
+    },
+    {
+      name: "arm lifting repeaters",
+      note: "90%",
+      prepare: 10,
+      work: 7,
+      restCycle: 3,
+      cycles: 5,
+      sets: 1,
+      restSet: 20,
+    },
+    {
+      name: "arm lifting repeaters",
+      note: "90%",
+      prepare: 10,
+      work: 7,
+      restCycle: 3,
+      cycles: 5,
+      sets: 1,
+      restSet: 20,
+    },
+    {
+      name: "arm lifting repeaters",
+      note: "90%",
+      prepare: 10,
+      work: 7,
+      restCycle: 3,
+      cycles: 5,
+      sets: 1,
+      restSet: 20,
+    }
+  ]
 
   useEffect(() => {
     console.log('WorkoutsContextProviderWrapper');
 
     handleConfigurationFromUrl();
 
+    // loadConfigurationFromStorage();
+
   }, [])
+
+  useEffect(() => {
+
+    console.log('useEffect', workouts);
+
+    if(workouts.length === 0) { return; }
+
+    console.log("useEffect - workouts has changed - FLOW to build new url + storage");
+
+    setLocalStorage(workouts);
+
+    const workoutsBase64 = compressToBase64(JSON.stringify(workouts));
+
+    console.log('workoutsBase64', workoutsBase64);
+
+    const params = new URLSearchParams();
+    
+    params.set("config", workoutsBase64);
+
+    const newUrl = `${window.location.pathname}?${params}`;
+
+    window.history.pushState({}, "", newUrl);
+
+  }, [JSON.stringify(workouts)])
 
   /**
    * 1. URL vince su LocalStorage
@@ -76,7 +176,13 @@ function WorkoutsContextProviderWrapper({ children }) {
 
     if (!configRaw) { console.log("configRaw null"); return; }
 
+    const workoutsJson = decompressFromBase64(configRaw);
 
+    const workoutsDeser = JSON.parse(workoutsJson);
+  
+    console.log('deserialized', workoutsDeser);
+
+    setWorkouts(workoutsDeser);
   }
 
   /**
@@ -93,26 +199,37 @@ function WorkoutsContextProviderWrapper({ children }) {
     */
   function handleWorkoutsChangeHandler(workout) {
     const workountJson = JSON.stringify(workout);
-    console.log('compress', compress(workountJson));
-    console.log('compressToBase64', compressToBase64(workountJson));
-    console.log('compressToUTF16', compressToUTF16(workountJson));
-    console.log('compressToEncodedURIComponent', compressToEncodedURIComponent(workountJson));
-    console.log('compressToUint8Array', compressToUint8Array(workountJson));
+    // console.log('compress', compress(workountJson));
+    // console.log('compressToBase64', compressToBase64(workountJson));
+    // console.log('compressToUTF16', compressToUTF16(workountJson));
+    // console.log('compressToEncodedURIComponent', compressToEncodedURIComponent(workountJson));
+    // console.log('compres{sToUint8Array', compressToUint8Array(workountJson));
 
-    setWorkouts(prevState => prevState.map(workoutState => {
-      return workoutState.id == workout.id ? { ...workout } : workoutState;
-    }));
+    if (workouts.findIndex(workoutState => workoutState.id === workout.id) >= 0) {
+      console.log("found!");
+      setWorkouts(prevState => prevState.map(workoutState => {
+        return workoutState.id === workout.id ? { ...workout } : workoutState;
+      }));
+    } else {
+      console.log("not found!");
 
-    console.log(workouts);
+      setWorkouts(prevstate => [...prevstate, workout])
+    }
 
-    saveLocalState();
+    // console.log(workouts);
+
+    // saveLocalState();
+  }
+
+  function createNextWorkoutId() {
+    return crypto.randomUUID();
   }
 
   function saveLocalState() {
-    setValue(workouts);
+    setLocalStorage(workouts);
   }
 
-  return <WorkoutsContext.Provider value={{ workouts, handleWorkoutsChangeHandler }}>{children}</WorkoutsContext.Provider>;
+  return <WorkoutsContext.Provider value={{ workouts, handleWorkoutsChangeHandler, createNextWorkoutId }}>{children}</WorkoutsContext.Provider>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -126,3 +243,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </NextUIProvider>
   </React.StrictMode>,
 )
+
+export const useOnboardingContext = () => {
+  const workoutContext = React.useContext(WorkoutsContext);
+  if (workoutContext === undefined) {
+    throw new Error('useworkoutContext must be inside a OnboardingProvider');
+  }
+  return workoutContext;
+};

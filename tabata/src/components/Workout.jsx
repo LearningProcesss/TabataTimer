@@ -1,7 +1,7 @@
 import React from 'react'
 import { IoPlayOutline } from "react-icons/io5";
 import { MdOutlineEdit } from "react-icons/md";
-import { Card, Image, Text, Badge, Button, Group, ActionIcon } from '@mantine/core';
+import { Card, Text, Badge, Group, ActionIcon } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import WorkoutOperations from './WorkoutOperations';
 import { useWorkoutInterface } from '../hooks/useWorkoutInterface';
