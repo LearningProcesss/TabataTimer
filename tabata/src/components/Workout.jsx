@@ -1,12 +1,16 @@
-import React from 'react'
+import { useContext } from 'react';
+import { ActionIcon, Badge, Card, Group, Text, Menu, Button, rem } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { IoPlayOutline } from "react-icons/io5";
 import { MdOutlineEdit } from "react-icons/md";
-import { Card, Text, Badge, Group, ActionIcon } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import WorkoutOperations from './WorkoutOperations';
+import { FaRegTrashAlt } from "react-icons/fa";
 import { useWorkoutInterface } from '../hooks/useWorkoutInterface';
+import WorkoutOperations from './WorkoutOperations';
+import { WorkoutsContext } from '../main';
 
 function Workout({ workout, style }) {
+
+    const { deleteWorkout } = useContext(WorkoutsContext);
 
     const [workoutTotal, secondsAsHumanReadable] = useWorkoutInterface();
 
@@ -92,10 +96,10 @@ function Workout({ workout, style }) {
                 </Group >
                 <Badge mt="5" color="pink" size='lg'>TOT {secondsAsHumanReadable(workoutTotal(workout))}</Badge>
                 <Group gap="10" justify='space-between'>
-                    <ActionIcon style={{ width: '80%' }} variant="filled" color='green' radius="md" size="xl" aria-label="Settings" mt="md">
+                    <ActionIcon style={{ width: '75%' }} variant="filled" color='green' radius="md" size="xl" aria-label="Settings" mt="md">
                         <IoPlayOutline size={32} />
                     </ActionIcon>
-                    <ActionIcon
+                    {/* <ActionIcon
                         variant="gradient"
                         size="xl"
                         aria-label="Gradient action icon"
@@ -105,7 +109,28 @@ function Workout({ workout, style }) {
                         onClick={open}
                     >
                         <MdOutlineEdit />
-                    </ActionIcon>
+                    </ActionIcon> */}
+                    <Menu transitionProps={{ transition: 'rotate-right', duration: 150 }} shadow="md" radius={"md"} mt="md" style={{ height: 42 }}>
+                        <Menu.Target>
+                            <Button>...</Button>
+                        </Menu.Target>
+
+                        <Menu.Dropdown>
+                            {/* <Menu.Label>Application</Menu.Label> */}
+                            <Menu.Item onClick={open} leftSection={<MdOutlineEdit style={{ width: rem(14), height: rem(14) }} />}>
+                                Edit
+                            </Menu.Item>
+                            <Menu.Divider />
+                            <Menu.Label>Danger zone</Menu.Label>
+                            <Menu.Item
+                                onClick={() => deleteWorkout(workout.id)}
+                                color="red"
+                                leftSection={<FaRegTrashAlt style={{ width: rem(14), height: rem(14) }} />}
+                            >
+                                Delete
+                            </Menu.Item>
+                        </Menu.Dropdown>
+                    </Menu>
                 </Group>
             </Card>
             <WorkoutOperations opened={opened} onClose={close} workout={workout} />
