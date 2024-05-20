@@ -99,17 +99,6 @@ function Workout({ workout, style }) {
                     <ActionIcon style={{ width: '75%' }} variant="filled" color='green' radius="md" size="xl" aria-label="Settings" mt="md">
                         <IoPlayOutline size={32} />
                     </ActionIcon>
-                    {/* <ActionIcon
-                        variant="gradient"
-                        size="xl"
-                        aria-label="Gradient action icon"
-                        gradient={{ from: 'blue', to: 'green', deg: 90 }}
-                        mt="md"
-                        radius="md"
-                        onClick={open}
-                    >
-                        <MdOutlineEdit />
-                    </ActionIcon> */}
                     <Menu transitionProps={{ transition: 'rotate-right', duration: 150 }} shadow="md" radius={"md"} mt="md" style={{ height: 42 }}>
                         <Menu.Target>
                             <Button>...</Button>
@@ -133,7 +122,10 @@ function Workout({ workout, style }) {
                     </Menu>
                 </Group>
             </Card>
-            <WorkoutOperations opened={opened} onClose={close} workout={workout} />
+            {/* <WorkoutOperations opened={opened} onClose={close} workout={workout} /> */}
+            {
+                opened ? <WorkoutOperations opened={opened} onClose={close} workout={workout} /> : null
+            }
         </>
     )
 }

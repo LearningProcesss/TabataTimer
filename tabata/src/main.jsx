@@ -3,11 +3,12 @@ import '@mantine/core/styles.css';
 import { useLocalStorage } from '@mantine/hooks';
 import { NextUIProvider } from '@nextui-org/react';
 import { compressToBase64, decompressFromBase64 } from 'lz-string';
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import App from './App.jsx';
 import WorkoutOperations from './components/WorkoutOperations';
+import { WorkoutValidator, WorkoutsValidator } from './api/Validator';
 import './index.css';
 
 const router = createBrowserRouter([
@@ -40,20 +41,26 @@ export const contextState = {
      * @param {Number} workout.sets
      * @param {Number} workout.restSet
     */
-  handleWorkoutsChangeHandler: (workout) => { },
+  createOrEditWorkout: (workout) => { },
   createNextWorkoutId: () => "",
   /**
    * 
    * @param {String} workoutId 
    */
-  deleteWorkout: (workoutId) => {}
+  deleteWorkout: (workoutId) => { },
+  downloadConfiguration: () => { },
+  uploadConfiguration: () => { }
 }
 
 export const WorkoutsContext = createContext(contextState);
 
 function WorkoutsContextProviderWrapper({ children }) {
 
-  const [workouts, setWorkouts] = useState([]);
+  const [workouts, setWorkouts] = useState(() => {
+    let initialState = handleConfigurationFromUrl();
+    initialState ??= [];
+    return initialState;
+  });
 
   const [isSettedByUrl, setByUrl] = useState(false);
 
@@ -62,78 +69,27 @@ function WorkoutsContextProviderWrapper({ children }) {
     defaultValue: [],
   });
 
-  const params = new URLSearchParams(window.location.search);
-
-  const configRaw = params.get("config");
-
-  // const workoutsFromUrl = useMemo(() => {
-
-
-  //   const workoutsJson = decompressFromBase64(configRaw);
-
-  //   const workoutsDeser = JSON.parse(workoutsJson);
-
-  //   return workoutsDeser;
-  // }, [configRaw]);
-
   useEffect(() => {
-    console.log("useEffect - incoming - FLOW to build workouts from url");
-
-    setByUrl(true);
-
-    handleConfigurationFromUrl();
-
-    console.log('isSetByUrl', isSettedByUrl);
-  }, [configRaw])
-
-  useEffect(() => {
-
     console.log("useEffect - workouts has changed - FLOW to build new url + storage");
-    
-    console.log('isSetByUrl', isSettedByUrl);
-
-    if(isSettedByUrl) { return; }
-
     console.log('useEffect', workouts);
-
-    // if(workouts.length === 0) { return; }
-
-
     setLocalStorage(workouts);
-
     const workoutsBase64 = compressToBase64(JSON.stringify(workouts));
-
     console.log('workoutsBase64', workoutsBase64);
-
     const params = new URLSearchParams();
-    
     params.set("config", workoutsBase64);
-
     const newUrl = `${window.location.pathname}?${params}`;
-
     window.history.pushState({}, "", newUrl);
-
   }, [JSON.stringify(workouts)])
 
   function handleConfigurationFromUrl() {
     const params = new URLSearchParams(window.location.search);
-
     const configRaw = params.get("config");
-
     console.log("configRaw", configRaw);
-
     if (!configRaw || configRaw === null) { console.log("configRaw is null"); return; }
-
     const workoutsJson = decompressFromBase64(configRaw);
-
     const workoutsDeser = JSON.parse(workoutsJson);
-  
     console.log('deserialized', workoutsDeser);
-
-    if(workoutsDeser.length <= 0) { return; }
-
-    // setWorkouts(workoutsDeser);
-
+    if (workoutsDeser.length <= 0) { return; }
     return workoutsDeser;
   }
 
@@ -148,15 +104,10 @@ function WorkoutsContextProviderWrapper({ children }) {
      * @param {Number} workout.cycles
      * @param {Number} workout.sets
      * @param {Number} workout.restSet
-    */
-  function handleWorkoutsChangeHandler(workout) {
-    const workountJson = JSON.stringify(workout);
-    // console.log('compress', compress(workountJson));
-    // console.log('compressToBase64', compressToBase64(workountJson));
-    // console.log('compressToUTF16', compressToUTF16(workountJson));
-    // console.log('compressToEncodedURIComponent', compressToEncodedURIComponent(workountJson));
-    // console.log('compres{sToUint8Array', compressToUint8Array(workountJson));
-
+  */
+  const createOrEditWorkout = useCallback((workout) => {
+    console.log('handleWorkoutsChangeHandler - workout', workout);
+    console.log('handleWorkoutsChangeHandler - workouts', workouts);
     if (workouts?.findIndex(workoutState => workoutState.id === workout.id) >= 0) {
       console.log("found!");
       setWorkouts(prevState => prevState.map(workoutState => {
@@ -164,20 +115,41 @@ function WorkoutsContextProviderWrapper({ children }) {
       }));
     } else {
       console.log("not found!");
-
       setWorkouts(prevstate => [...prevstate, workout])
     }
-  }
+  }, [workouts]);
 
-  function createNextWorkoutId() {
-    return crypto.randomUUID();
-  }
+  const createNextWorkoutId = useCallback(() => crypto.randomUUID(), []);
 
-  function deleteWorkout(idWorkout) {
+  const deleteWorkout = useCallback((idWorkout) => {
     setWorkouts(prevState => prevState.filter(item => item.id !== idWorkout));
-  }
+  }, []);
 
-  return <WorkoutsContext.Provider value={{ workouts, handleWorkoutsChangeHandler, createNextWorkoutId, deleteWorkout }}>{children}</WorkoutsContext.Provider>;
+  const downloadConfiguration = useCallback(() => {
+    let configuration = new Blob([JSON.stringify(workouts)], { type: 'text/json' });
+    const url = window.URL.createObjectURL(configuration);
+    let link = document.createElement("a");
+    link.href = url;
+    link.download = `configuration-${new Date().toLocaleDateString('it-IT', { hour: '2-digit', minute: '2-digit' }).replace(' ', '_').replace(',', '')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, []);
+
+  const uploadConfiguration = useCallback(() => {
+    let input = document.createElement("input");
+    input.type = 'file';
+    input.onchange = (e) => {
+      console.log(e.target.files);
+      e.target.files[0].text().then(content => console.log('content', content));
+    };
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+  }, []);
+
+  return <WorkoutsContext.Provider value={{ workouts, createOrEditWorkout, createNextWorkoutId, deleteWorkout, downloadConfiguration, uploadConfiguration }}>{children}</WorkoutsContext.Provider>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

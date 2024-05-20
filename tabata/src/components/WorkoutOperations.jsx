@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useCallback, useContext } from 'react';
 import { Modal, Button, Paper, TextInput, NumberInput, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { WorkoutsContext } from '../main';
@@ -7,15 +7,15 @@ import { WorkoutValidator } from '../api/Validator';
 
 function WorkoutOperations({ opened, onClose, workout }) {
 
-  const { handleWorkoutsChangeHandler, createNextWorkoutId } = useContext(WorkoutsContext);
+  const { createOrEditWorkout, createNextWorkoutId } = useContext(WorkoutsContext);
 
-  const nextId = createNextWorkoutId();
+  const id = createNextWorkoutId();
 
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: workout === null ?
       {
-        id: nextId,
+        id: id,
         name: '',
         note: '',
         prepare: 0,
@@ -49,8 +49,8 @@ function WorkoutOperations({ opened, onClose, workout }) {
         centered>
         <Paper shadow="sm" p="xl">
           <form onSubmit={form.onSubmit((values, event) => {
-            console.log(values, event, WorkoutValidator.parse(values))
-            handleWorkoutsChangeHandler(WorkoutValidator.parse(values));
+            console.log('pre', values, event, WorkoutValidator.parse(values));
+            createOrEditWorkout(WorkoutValidator.parse(values));
             form.reset();
             onClose();
           }, (validationErrors, values) => {
