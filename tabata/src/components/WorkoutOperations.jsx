@@ -1,7 +1,7 @@
-import { useCallback, useContext } from 'react';
+import { useContext } from 'react';
 import { Modal, Button, Paper, TextInput, NumberInput, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { WorkoutsContext } from '../main';
+import { WorkoutsContext } from '../hooks/workoutContext';
 import { zodResolver } from 'mantine-form-zod-resolver';
 import { WorkoutValidator } from '../api/Validator';
 

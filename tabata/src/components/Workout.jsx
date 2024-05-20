@@ -6,7 +6,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useWorkoutInterface } from '../hooks/useWorkoutInterface';
 import WorkoutOperations from './WorkoutOperations';
-import { WorkoutsContext } from '../main';
+import { WorkoutsContext } from '../hooks/workoutContext';
 
 function Workout({ workout, style }) {
 
