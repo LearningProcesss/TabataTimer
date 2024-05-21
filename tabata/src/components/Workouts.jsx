@@ -1,4 +1,4 @@
-import { ActionIcon, Affix, Flex, Transition, ScrollArea } from '@mantine/core';
+import { Affix, Flex, Transition, ScrollArea } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useContext } from 'react';
 import { IoMdAdd } from "react-icons/io";
@@ -7,7 +7,7 @@ import { IoCloudDownload } from "react-icons/io5";
 import { IoCloudUpload } from "react-icons/io5";
 import { WorkoutsContext } from '../hooks/workoutContext';
 import Workout from './Workout';
-import WorkoutOperations from './WorkoutOperations';
+import WorkoutModal from './WorkoutModal';
 import { Fab, Action } from 'react-tiny-fab';
 import 'react-tiny-fab/dist/styles.css';
 
@@ -65,7 +65,7 @@ function Workouts() {
                 </Affix>}
             </Transition>
             {
-                opened ? <WorkoutOperations opened={opened} onClose={close} workout={null} /> : null
+                opened ? <WorkoutModal opened={opened} onClose={close} workout={null} /> : null
             }
         </>
 

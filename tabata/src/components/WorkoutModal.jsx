@@ -5,7 +5,7 @@ import { WorkoutsContext } from '../hooks/workoutContext';
 import { zodResolver } from 'mantine-form-zod-resolver';
 import { WorkoutValidator } from '../api/Validator';
 
-function WorkoutOperations({ opened, onClose, workout }) {
+function WorkoutModal({ opened, onClose, workout }) {
 
   const { createOrEditWorkout, createNextWorkoutId } = useContext(WorkoutsContext);
 
@@ -123,4 +123,4 @@ function WorkoutOperations({ opened, onClose, workout }) {
   );
 }
 
-export default WorkoutOperations
+export default WorkoutModal

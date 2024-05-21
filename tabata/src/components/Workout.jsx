@@ -5,8 +5,9 @@ import { IoPlayOutline } from "react-icons/io5";
 import { MdOutlineEdit } from "react-icons/md";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useWorkoutInterface } from '../hooks/useWorkoutInterface';
-import WorkoutOperations from './WorkoutOperations';
+import WorkoutModal from './WorkoutModal';
 import { WorkoutsContext } from '../hooks/workoutContext';
+import { useNavigate } from 'react-router-dom';
 
 function Workout({ workout, style }) {
 
@@ -15,6 +16,8 @@ function Workout({ workout, style }) {
     const [workoutTotal, secondsAsHumanReadable] = useWorkoutInterface();
 
     const [opened, { open, close }] = useDisclosure(false);
+
+    const navigateTo = useNavigate();
 
     return (
         <>
@@ -96,7 +99,7 @@ function Workout({ workout, style }) {
                 </Group >
                 <Badge mt="5" color="pink" size='lg'>TOT {secondsAsHumanReadable(workoutTotal(workout))}</Badge>
                 <Group gap="10" justify='space-between'>
-                    <ActionIcon style={{ width: '75%' }} variant="filled" color='green' radius="md" size="xl" aria-label="Settings" mt="md">
+                    <ActionIcon onClick={() => navigateTo(`workouts/${workout.id}`)} style={{ width: '75%' }} variant="filled" color='green' radius="md" size="xl" aria-label="Settings" mt="md">
                         <IoPlayOutline size={32} />
                     </ActionIcon>
                     <Menu transitionProps={{ transition: 'rotate-right', duration: 150 }} shadow="md" radius={"md"} mt="md" style={{ height: 42 }}>
@@ -124,7 +127,7 @@ function Workout({ workout, style }) {
             </Card>
             {/* <WorkoutOperations opened={opened} onClose={close} workout={workout} /> */}
             {
-                opened ? <WorkoutOperations opened={opened} onClose={close} workout={workout} /> : null
+                opened ? <WorkoutModal opened={opened} onClose={close} workout={workout} /> : null
             }
         </>
     )

@@ -1,24 +1,14 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
 import { compressToBase64, decompressFromBase64 } from 'lz-string';
-import { WorkoutValidator, WorkoutsValidator } from '../api/Validator';
+import { WorkoutsValidator } from '../api/Validator';
 import { notifications } from '@mantine/notifications';
 import { VscError } from "react-icons/vsc";
 
 const internalState = {
     workouts: [],
     /**
-       *
-       * @param {Object} workout
-       * @param {String} workout.id
-       * @param {String} workout.name
-       * @param {String} workout.note
-       * @param {Number} workout.prepare
-       * @param {Number} workout.work
-       * @param {Number} workout.restCycle
-       * @param {Number} workout.cycles
-       * @param {Number} workout.sets
-       * @param {Number} workout.restSet
+       * @param {Workout} workout
       */
     createOrEditWorkout: (workout) => { },
     createNextWorkoutId: () => "",
@@ -28,7 +18,26 @@ const internalState = {
      */
     deleteWorkout: (workoutId) => { },
     downloadConfiguration: () => { },
-    uploadConfiguration: () => { }
+    uploadConfiguration: () => { },
+    /**
+     * 
+     * @param {String} workoutId
+     * @returns {Workout} 
+     */
+    workoutById: ({ workoutId }) => { }
+
+    /**
+       * @typedef {Object} Workout
+       * @property {String} workout.id
+       * @property {String} workout.name
+       * @property {String} workout.note
+       * @property {Number} workout.prepare
+       * @property {Number} workout.work
+       * @property {Number} workout.restCycle
+       * @property {Number} workout.cycles
+       * @property {Number} workout.sets
+       * @property {Number} workout.restSet
+    */
 }
 
 export const WorkoutsContext = createContext(internalState);
@@ -76,18 +85,6 @@ export const WorkoutsContextProviderWrapper = ({ children }) => {
         return workoutsDeser;
     }
 
-    /**
-       *
-       * @param {Object} workout
-       * @param {String} workout.id
-       * @param {String} workout.note
-       * @param {Number} workout.prepare
-       * @param {Number} workout.work
-       * @param {Number} workout.restCycle
-       * @param {Number} workout.cycles
-       * @param {Number} workout.sets
-       * @param {Number} workout.restSet
-    */
     const createOrEditWorkout = useCallback((workout) => {
         if (workouts?.findIndex(workoutState => workoutState.id === workout.id) >= 0) {
             setWorkouts(prevState => prevState.map(workoutState => {
@@ -129,7 +126,7 @@ export const WorkoutsContextProviderWrapper = ({ children }) => {
                     icon: <VscError />,
                     color: 'red',
                     autoClose: 5000,
-                    
+
                 });
 
                 return;
@@ -141,7 +138,14 @@ export const WorkoutsContextProviderWrapper = ({ children }) => {
         document.body.removeChild(input);
     }, []);
 
-    return <WorkoutsContext.Provider value={{ workouts, createOrEditWorkout, createNextWorkoutId, deleteWorkout, downloadConfiguration, uploadConfiguration }}>{children}</WorkoutsContext.Provider>;
+    const workoutById = useCallback(({ params: { workoutId } }) => {
+        console.log('workoutById', workoutId);
+        const workout = workouts.find(workout => workout.id === workoutId);
+        console.log('workoutById', workout);
+        return { workout };
+    }, [workouts]);
+
+    return <WorkoutsContext.Provider value={{ workouts, createOrEditWorkout, createNextWorkoutId, deleteWorkout, downloadConfiguration, uploadConfiguration, workoutById }}>{children}</WorkoutsContext.Provider>;
 }
 
 export const useWorkoutContext = () => {
